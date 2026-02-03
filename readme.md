@@ -8,11 +8,10 @@ Let Claude order your food on forkable
 ## Setup
 
 ```bash
-# Install dependencies
-npm install
+git clone https://github.com/jackpeck/clausine
+cd clausine
 
-# Install Playwright browsers
-npx playwright install
+npm install
 ```
 
 ## Usage
