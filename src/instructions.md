@@ -6,7 +6,8 @@ This tool helps select work meals from Forkable (a corporate meal ordering servi
 
 ## First Run Setup
 
-Before starting, check if `user_preferences.txt` exists. If not, ask the user:
+
+Before starting, check if `./user_preferences.txt` exists (in the repo root). If not, ask the user:
 1. Any ingredients to avoid? (allergies, dislikes)
 2. Favorite cuisines or types of food?
 3. Any restaurants or dishes they already know they like/dislike?
