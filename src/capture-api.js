@@ -8,7 +8,7 @@ const API_DIR = path.join(__dirname, '../tmp/api-responses');
 
 // Ensure api-responses dir exists
 if (!fs.existsSync(API_DIR)) {
-  fs.mkdirSync(API_DIR);
+  fs.mkdirSync(API_DIR, { recursive: true });
 }
 
 async function main() {
