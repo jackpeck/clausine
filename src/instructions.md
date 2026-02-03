@@ -16,6 +16,16 @@ Create `user_preferences.txt` with their answers. Budget is always $25/meal.
 
 ## Starting the Browser
 
+First, check that playwright is installed:
+
+```bash
+src/check-playwright.sh
+```
+
+If playwright is not installed, run `npm install` to install dependencies.
+
+Then start the browser:
+
 ```bash
 src/start-browser-background.sh
 src/wait-for-browser-ready.sh

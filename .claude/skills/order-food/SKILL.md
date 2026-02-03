@@ -3,9 +3,11 @@ name: order-food
 description: Select meals from Forkable corporate meal ordering service
 disable-model-invocation: true
 allowed-tools:
+  - Bash(src/check-playwright.sh)
   - Bash(src/start-browser-background.sh)
   - Bash(src/wait-for-browser-ready.sh)
   - Bash(src/stop-browser.sh)
+  - Bash(npm install)
   - Bash(node src/fk.js *)
   - Bash(node src/write-summary.js *)
   - Bash(node src/browser-cmd.js *)
