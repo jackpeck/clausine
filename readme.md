@@ -2,7 +2,7 @@
 
 ## *claw-zeen* - Claude + Cuisine
 
-Let Claude order your food on forkable
+Let Claude order your food on forkable.
 
 
 ## Setup
