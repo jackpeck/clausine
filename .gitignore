@@ -3,18 +3,14 @@ node_modules/
 
 # Browser session data
 .session/
+.browser-ready
 
-# Debug/generated files
-page-debug.html
-screenshot.png
-menus.md
-
-# API response cache
-api-responses/
+# Temp/generated files
+tmp/
 
 # User-specific data
 selections/
-meal_preferences.txt
+user_preferences.txt
 
 # macOS
 .DS_Store

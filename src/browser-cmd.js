@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
-const READY_FILE = path.join(__dirname, '.browser-ready');
+const READY_FILE = path.join(__dirname, '../.browser-ready');
 const CDP_PORT = 9222;
 
 async function connect() {
@@ -36,7 +36,7 @@ async function main() {
 
 Actions:
   read              - Read visible text from page
-  html              - Get full HTML (saved to page-debug.html)
+  html              - Get full HTML (saved to tmp/page-debug.html)
   url               - Get current URL
   click <text>      - Click element containing text
   clicksel <sel>    - Click element by CSS selector
@@ -62,8 +62,8 @@ Actions:
 
       case 'html': {
         const html = await page.content();
-        fs.writeFileSync(path.join(__dirname, 'page-debug.html'), html);
-        console.log('HTML saved to page-debug.html');
+        fs.writeFileSync(path.join(__dirname, '../tmp/page-debug.html'), html);
+        console.log('HTML saved to tmp/page-debug.html');
         break;
       }
 
@@ -114,7 +114,7 @@ Actions:
 
       case 'screenshot': {
         const name = args[1] || 'screenshot.png';
-        const filepath = path.join(__dirname, name);
+        const filepath = path.join(__dirname, '../tmp', name);
         await page.screenshot({ path: filepath, fullPage: false });
         console.log(`Screenshot saved to ${filepath}`);
         break;

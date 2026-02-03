@@ -2,9 +2,9 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
-const SESSION_DIR = path.join(__dirname, '.session');
+const SESSION_DIR = path.join(__dirname, '../.session');
 const CDP_PORT = 9222;
-const READY_FILE = path.join(__dirname, '.browser-ready');
+const READY_FILE = path.join(__dirname, '../.browser-ready');
 
 async function main() {
   console.log('Launching browser with remote debugging on port', CDP_PORT);

@@ -4,7 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const API_DIR = path.join(__dirname, 'api-responses');
+const API_DIR = path.join(__dirname, '../tmp/api-responses');
 if (!fs.existsSync(API_DIR)) {
   console.error('No api-responses directory. Run: node capture-api.js');
   process.exit(1);
@@ -114,6 +114,6 @@ if (deliveries && deliveries.length > 0) {
 }
 
 // Write output
-fs.writeFileSync('menus.md', output);
-console.log('Written to menus.md');
+fs.writeFileSync(path.join(__dirname, '../tmp/menus.md'), output);
+console.log('Written to tmp/menus.md');
 console.log(`${uniqueMenus.length} restaurants, ${deliveries?.length || 0} deliveries`);

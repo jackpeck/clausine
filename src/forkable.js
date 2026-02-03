@@ -2,8 +2,8 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
-const SESSION_DIR = path.join(__dirname, '.session');
-const READY_FILE = path.join(__dirname, '.browser-ready');
+const SESSION_DIR = path.join(__dirname, '../.session');
+const READY_FILE = path.join(__dirname, '../.browser-ready');
 const CDP_PORT = 9222;
 
 // Connect to running browser

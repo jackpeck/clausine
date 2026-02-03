@@ -4,7 +4,7 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
-const READY_FILE = path.join(__dirname, '.browser-ready');
+const READY_FILE = path.join(__dirname, '../.browser-ready');
 const CDP_PORT = 9222;
 
 async function main() {

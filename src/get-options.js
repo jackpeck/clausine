@@ -6,8 +6,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const API_DIR = path.join(__dirname, 'api-responses');
-const PREFS_FILE = path.join(__dirname, 'meal_preferences.txt');
+const API_DIR = path.join(__dirname, '../tmp/api-responses');
+const PREFS_FILE = path.join(__dirname, '../user_preferences.txt');
 
 // Parse arguments
 const args = process.argv.slice(2);

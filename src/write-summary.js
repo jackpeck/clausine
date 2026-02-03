@@ -6,7 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const SELECTIONS_DIR = path.join(__dirname, 'selections');
+const SELECTIONS_DIR = path.join(__dirname, '../selections');
 
 // Parse arguments, extract --detail flag
 const rawArgs = process.argv.slice(2);
