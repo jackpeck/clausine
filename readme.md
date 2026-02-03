@@ -10,8 +10,6 @@ Let Claude order your food on forkable.
 ```bash
 git clone https://github.com/jackpeck/clausine
 cd clausine
-
-npm install
 ```
 
 ## Usage
