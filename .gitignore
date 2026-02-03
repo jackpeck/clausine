@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Browser session data
+.session/
+
+# Debug/generated files
+page-debug.html
+screenshot.png
+menus.md
+
+# API response cache
+api-responses/
+
+# User-specific data
+selections/
+meal_preferences.txt
+
+# macOS
+.DS_Store
+
+# Claude Code
+.claude/
