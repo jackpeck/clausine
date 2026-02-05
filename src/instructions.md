@@ -76,7 +76,32 @@ If the page shows "CHOOSE MEAL FROM:" with restaurant buttons, one must be click
 
 For meals with multiple required selections (e.g., "Choose Beef Type #1", "#2", "#3"), use the section number parameter with toggle to target specific groups.
 
-### 3. Record the Selection
+### 3. Select Multiple Meals in Parallel (Faster)
+
+For selecting multiple meals at once, use the multi-tab feature which opens separate browser tabs and selects all meals simultaneously:
+
+```bash
+node src/fk.js select-all '[
+  {"day":0,"mealType":"Lunch","mealName":"Chicken Bowl"},
+  {"day":1,"mealType":"Lunch","mealName":"Beef Tacos"},
+  {"day":2,"mealType":"Lunch","mealName":"Veggie Wrap"}
+]'
+```
+
+Or save selections to a JSON file and pass the path:
+```bash
+node src/fk.js select-all selections.json
+```
+
+Each selection object supports:
+- `day` - 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri
+- `mealType` - "Lunch" or "Dinner"
+- `mealName` - Name of the meal to select
+- `addons` (optional) - Array of `{"name": "Addon Name", "section": 2}` (section is optional)
+
+This is much faster than selecting meals one at a time, as all tabs run in parallel.
+
+### 4. Record the Selection
 
 Claude should always record both a short summary and a detailed explanation. Write the detailed markdown to a file first, then:
 
@@ -97,9 +122,10 @@ For the current week, Claude should find and fill any missing selections:
 1. Run `node src/fk.js refresh` to get latest menu data
 2. Run `node src/fk.js unselected` to find meals without selections
 3. For each unselected meal, run `node src/fk.js options <day> <meal>` to see available options
-3. Choose the best meal based on preferences in `user_preferences.txt`
-4. Select the meal and appropriate add-ons
-5. Confirm the selection
+4. Choose the best meal based on preferences in `user_preferences.txt`
+5. Select meals using either method:
+   - **Individual**: Use `open`, `select`, `toggle`, `confirm` commands one day at a time
+   - **Parallel (faster)**: Use `select-all` with JSON to select multiple meals simultaneously
 6. Record with src/write-summary.js (both short summary and detailed explanation)
 7. After all meals are selected, ask User if they want to close the browser
 
