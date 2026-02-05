@@ -155,6 +155,3 @@ For the current week, Claude should find and fill any missing selections:
 - `selections/` - Selection summaries and detailed explanations
 - `tmp/api-responses/` - Cached API data (refresh with `node src/fk.js refresh`)
 
-## Notes
-
-- When writing temporary files (e.g., detail files for write-summary.js), write them outside the project directory to avoid file edit permission prompts.
