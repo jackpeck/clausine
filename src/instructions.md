@@ -6,8 +6,7 @@ This tool helps select work meals from Forkable (a corporate meal ordering servi
 
 ## First Run Setup
 
-
-Before starting, check if `./user_preferences.txt` exists (in the repo root). If not, ask the user:
+Read `./user_preferences.txt` (in the repo root). If it doesn't exist, ask the user:
 1. Any ingredients to avoid? (allergies, dislikes)
 2. Favorite cuisines or types of food?
 3. Any restaurants or dishes they already know they like/dislike?
@@ -153,3 +152,7 @@ For the current week, Claude should find and fill any missing selections:
 - `claude-tips.md` - Technical tips for using the tools
 - `selections/` - Selection summaries and detailed explanations
 - `tmp/api-responses/` - Cached API data (refresh with `node src/fk.js refresh`)
+
+## Notes
+
+- When writing temporary files (e.g., detail files for write-summary.js), use the Claude tmp directory (e.g., `/tmp/`) to avoid file edit permission prompts.
