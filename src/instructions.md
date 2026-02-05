@@ -112,6 +112,8 @@ node src/fk.js close-tabs
 - `tab-select <tab> <name>` - Select a meal
 - `tab-addons <tab>` - View available addons
 - `tab-toggle <tab> <addon> [section]` - Toggle an addon
+- `tab-notes <tab> <text>` - Set notes on specific tab
+- `tab-price <tab>` - Get current price on specific tab
 - `tab-confirm <tab>` - Confirm the selection
 - `tab-read <tab>` - Read page content
 
