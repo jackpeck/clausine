@@ -155,4 +155,4 @@ For the current week, Claude should find and fill any missing selections:
 
 ## Notes
 
-- When writing temporary files (e.g., detail files for write-summary.js), write to `/tmp/` (the system temp directory, not the local `tmp/` folder) to avoid file edit permission prompts.
+- When writing temporary files (e.g., detail files for write-summary.js), write them outside the project directory to avoid file edit permission prompts.
