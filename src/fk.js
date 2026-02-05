@@ -386,6 +386,36 @@ const commands = {
     }
   },
 
+  // Tab-specific: set notes on a specific tab
+  async 'tab-notes'(tabIndex, text) {
+    const tab = parseInt(tabIndex) || 0;
+    const { browser, page } = await fk.connectTab(tab);
+    try {
+      const modal = await page.$('.modal-content') || await page.$('body');
+      const textarea = await modal.$('textarea');
+      if (textarea) {
+        await textarea.fill(text || '');
+        console.log(`Tab ${tab}: Notes set to: "${text || ''}"`);
+      } else {
+        console.log(`Tab ${tab}: Notes field not found`);
+      }
+    } finally {
+      await browser.close();
+    }
+  },
+
+  // Tab-specific: get price on a specific tab
+  async 'tab-price'(tabIndex) {
+    const tab = parseInt(tabIndex) || 0;
+    const { browser, page } = await fk.connectTab(tab);
+    try {
+      const price = await fk.getCurrentPrice(page);
+      console.log(`Tab ${tab}: ${price || 'No price found'}`);
+    } finally {
+      await browser.close();
+    }
+  },
+
   async 'select-all'(jsonArg) {
     let selections;
 
@@ -456,6 +486,8 @@ Multi-Tab Commands (for parallel sub-agent operation):
   tab-select <tab> <name> - Select meal on specific tab
   tab-addons <tab> - List addons on specific tab
   tab-toggle <tab> <addon> [section] - Toggle addon on specific tab
+  tab-notes <tab> <text> - Set notes on specific tab
+  tab-price <tab> - Get current price on specific tab
   tab-confirm <tab> - Confirm meal on specific tab
   tab-read <tab>  - Read page content from specific tab
 
