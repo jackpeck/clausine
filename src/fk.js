@@ -274,6 +274,118 @@ const commands = {
   // Select multiple meals in parallel using multiple browser tabs
   // Usage: node fk.js select-all '[{"day":0,"mealType":"Lunch","mealName":"Chicken Bowl"},...]'
   // Or: node fk.js select-all selections.json
+  // Open multiple browser tabs for parallel operation
+  async 'open-tabs'(numTabs) {
+    const n = parseInt(numTabs) || 5;
+    console.log(`Opening ${n} tabs...`);
+    const result = await fk.openTabs(n);
+    console.log(`Tabs ready: ${result.tabIndices.join(', ')}`);
+    console.log(`\nUse --tab <n> with commands to operate on specific tabs, or run select-one.js`);
+    console.log(JSON.stringify(result, null, 2));
+  },
+
+  // Close all tabs except the first one
+  async 'close-tabs'() {
+    const result = await fk.closeTabs();
+    console.log(`Closed ${result.closed} tabs. ${result.remaining} tab remaining.`);
+  },
+
+  // Tab-specific commands: open a meal selection on a specific tab
+  async 'tab-open'(tabIndex, dayIndex) {
+    const tab = parseInt(tabIndex) || 0;
+    const day = parseInt(dayIndex) || 0;
+    const { browser, page } = await fk.connectTab(tab);
+    try {
+      const result = await fk.openMealSelection(page, day);
+      console.log(JSON.stringify(result, null, 2));
+    } finally {
+      await browser.close();
+    }
+  },
+
+  // Tab-specific: switch meal type on a specific tab
+  async 'tab-lunch'(tabIndex) {
+    const tab = parseInt(tabIndex) || 0;
+    const { browser, page } = await fk.connectTab(tab);
+    try {
+      const result = await fk.switchMealType(page, 'Lunch');
+      console.log(`Tab ${tab}: ${result.message}`);
+    } finally {
+      await browser.close();
+    }
+  },
+
+  async 'tab-dinner'(tabIndex) {
+    const tab = parseInt(tabIndex) || 0;
+    const { browser, page } = await fk.connectTab(tab);
+    try {
+      const result = await fk.switchMealType(page, 'Dinner');
+      console.log(`Tab ${tab}: ${result.message}`);
+    } finally {
+      await browser.close();
+    }
+  },
+
+  // Tab-specific: select a meal on a specific tab
+  async 'tab-select'(tabIndex, mealName) {
+    const tab = parseInt(tabIndex) || 0;
+    const { browser, page } = await fk.connectTab(tab);
+    try {
+      const result = await fk.selectMeal(page, mealName);
+      console.log(JSON.stringify(result, null, 2));
+    } finally {
+      await browser.close();
+    }
+  },
+
+  // Tab-specific: get addons on a specific tab
+  async 'tab-addons'(tabIndex) {
+    const tab = parseInt(tabIndex) || 0;
+    const { browser, page } = await fk.connectTab(tab);
+    try {
+      const result = await fk.getAddons(page);
+      console.log(JSON.stringify(result, null, 2));
+    } finally {
+      await browser.close();
+    }
+  },
+
+  // Tab-specific: toggle addon on a specific tab
+  async 'tab-toggle'(tabIndex, addonName, sectionNum) {
+    const tab = parseInt(tabIndex) || 0;
+    const { browser, page } = await fk.connectTab(tab);
+    try {
+      const result = await fk.toggleAddon(page, addonName, sectionNum);
+      console.log(JSON.stringify(result, null, 2));
+    } finally {
+      await browser.close();
+    }
+  },
+
+  // Tab-specific: confirm meal on a specific tab
+  async 'tab-confirm'(tabIndex) {
+    const tab = parseInt(tabIndex) || 0;
+    const { browser, page } = await fk.connectTab(tab);
+    try {
+      const result = await fk.confirmMeal(page);
+      console.log(JSON.stringify(result, null, 2));
+    } finally {
+      await browser.close();
+    }
+  },
+
+  // Tab-specific: read page content
+  async 'tab-read'(tabIndex) {
+    const tab = parseInt(tabIndex) || 0;
+    const { browser, page } = await fk.connectTab(tab);
+    try {
+      const text = await fk.readPage(page);
+      console.log(text);
+    } finally {
+      await browser.close();
+    }
+  },
+
   async 'select-all'(jsonArg) {
     let selections;
 
@@ -334,6 +446,19 @@ Commands:
   refresh         - Reload page and regenerate menus.md
   options <day> <meal> - Show options for day (mon-fri) and meal (lunch/dinner)
   unselected      - Find meals without selections
+
+Multi-Tab Commands (for parallel sub-agent operation):
+  open-tabs <n>   - Open n browser tabs for parallel operation
+  close-tabs      - Close all tabs except the first one
+  tab-lunch <tab> - Switch tab to Lunch view
+  tab-dinner <tab> - Switch tab to Dinner view
+  tab-open <tab> <day> - Open meal selection on specific tab
+  tab-select <tab> <name> - Select meal on specific tab
+  tab-addons <tab> - List addons on specific tab
+  tab-toggle <tab> <addon> [section] - Toggle addon on specific tab
+  tab-confirm <tab> - Confirm meal on specific tab
+  tab-read <tab>  - Read page content from specific tab
+
   help            - Show this help
 `);
   }

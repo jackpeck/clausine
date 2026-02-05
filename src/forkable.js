@@ -41,6 +41,81 @@ async function connectMultiTab(numTabs) {
   return { browser, context, pages };
 }
 
+// Connect to a specific tab by index (0-based)
+async function connectTab(tabIndex) {
+  if (!fs.existsSync(READY_FILE)) {
+    throw new Error('Browser not running. Start it with: node start-browser.js');
+  }
+  const browser = await chromium.connectOverCDP(`http://localhost:${CDP_PORT}`);
+  const context = browser.contexts()[0];
+  const pages = context.pages();
+
+  if (tabIndex >= pages.length) {
+    throw new Error(`Tab ${tabIndex} does not exist. Only ${pages.length} tabs open.`);
+  }
+
+  const page = pages[tabIndex];
+  return { browser, context, page, tabIndex, totalTabs: pages.length };
+}
+
+// Open multiple tabs and return their count
+async function openTabs(numTabs) {
+  if (!fs.existsSync(READY_FILE)) {
+    throw new Error('Browser not running. Start it with: node start-browser.js');
+  }
+  const browser = await chromium.connectOverCDP(`http://localhost:${CDP_PORT}`);
+  const context = browser.contexts()[0];
+  const existingPages = context.pages();
+  const mainPage = existingPages[0];
+
+  // Get the base URL from the main page
+  const baseUrl = await mainPage.url();
+
+  // Create new tabs up to numTabs total
+  const tabsToCreate = numTabs - existingPages.length;
+  const newTabs = [];
+
+  for (let i = 0; i < tabsToCreate; i++) {
+    const newPage = await context.newPage();
+    await newPage.goto(baseUrl);
+    await newPage.waitForLoadState('networkidle');
+    newTabs.push(existingPages.length + i);
+  }
+
+  const totalTabs = existingPages.length + newTabs.length;
+  await browser.close();
+
+  return {
+    totalTabs,
+    newTabs,
+    existingTabs: existingPages.length,
+    tabIndices: Array.from({ length: totalTabs }, (_, i) => i)
+  };
+}
+
+// Close all tabs except the first one
+async function closeTabs() {
+  if (!fs.existsSync(READY_FILE)) {
+    throw new Error('Browser not running. Start it with: node start-browser.js');
+  }
+  const browser = await chromium.connectOverCDP(`http://localhost:${CDP_PORT}`);
+  const context = browser.contexts()[0];
+  const pages = context.pages();
+
+  let closed = 0;
+  for (let i = pages.length - 1; i > 0; i--) {
+    await pages[i].close();
+    closed++;
+  }
+
+  // Refresh the main page
+  await pages[0].reload();
+  await pages[0].waitForLoadState('networkidle');
+
+  await browser.close();
+  return { closed, remaining: 1 };
+}
+
 // Switch between Lunch and Dinner
 async function switchMealType(page, type) {
   // type should be 'Lunch' or 'Dinner'
@@ -511,6 +586,9 @@ async function selectMealsParallel(selections) {
 module.exports = {
   connect,
   connectMultiTab,
+  connectTab,
+  openTabs,
+  closeTabs,
   switchMealType,
   getMeals,
   openMealSelection,

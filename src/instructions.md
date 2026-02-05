@@ -101,7 +101,50 @@ Each selection object supports:
 
 This is much faster than selecting meals one at a time, as all tabs run in parallel.
 
-### 4. Record the Selection
+### 4. Parallel Selection with Sub-Agents (Best for Complex Meals)
+
+For meals that require addon decisions, spawn sub-agents that each operate their own browser tab. This allows each agent to discover available addons and make intelligent selections.
+
+**Step 1: Open tabs (one per meal)**
+```bash
+node src/fk.js open-tabs 5
+```
+
+**Step 2: Spawn sub-agents in parallel, each handling one tab**
+
+Each sub-agent runs independently on its assigned tab:
+```bash
+# Sub-agent 0: Tab 0, Monday Lunch
+node src/select-one.js 0 0 Lunch "Chicken Bowl"
+# Shows available addons, agent decides, then:
+node src/fk.js tab-toggle 0 "Extra Protein"
+node src/fk.js tab-confirm 0
+
+# Sub-agent 1: Tab 1, Tuesday Lunch (runs in parallel)
+node src/select-one.js 1 1 Lunch "Beef Tacos"
+# ...
+```
+
+Or use `--auto-addons` to auto-select defaults and confirm immediately:
+```bash
+node src/select-one.js 0 0 Lunch "Chicken Bowl" --auto-addons
+```
+
+**Step 3: Clean up tabs**
+```bash
+node src/fk.js close-tabs
+```
+
+**Tab-specific commands:**
+- `tab-lunch <tab>` / `tab-dinner <tab>` - Switch meal type on tab
+- `tab-open <tab> <day>` - Open meal selection
+- `tab-select <tab> <name>` - Select a meal
+- `tab-addons <tab>` - View available addons
+- `tab-toggle <tab> <addon> [section]` - Toggle an addon
+- `tab-confirm <tab>` - Confirm the selection
+- `tab-read <tab>` - Read page content
+
+### 5. Record the Selection
 
 Claude should always record both a short summary and a detailed explanation. Write the detailed markdown to a file first, then:
 
