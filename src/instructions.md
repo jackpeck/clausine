@@ -114,7 +114,7 @@ node src/fk.js tab-select <tab> "<meal name>"
 node src/fk.js tab-addons <tab>             # see available options and add-ons
 node src/fk.js tab-toggle <tab> "<addon>"   # toggle addon (first match)
 node src/fk.js tab-toggle <tab> "<addon>" 2 # toggle addon in section 2 (for multiple choice groups)
-node src/fk.js tab-notes <tab> "no onion"   # add notes if restaurant supports it
+node src/fk.js tab-notes <tab> "no onion please"  # add notes if restaurant supports it
 node src/fk.js tab-price <tab>              # verify price is under budget
 node src/fk.js tab-confirm <tab>
 node src/fk.js tab-read <tab>               # read page content
