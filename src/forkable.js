@@ -17,6 +17,30 @@ async function connect() {
   return { browser, context, page };
 }
 
+// Connect and create multiple pages for parallel operations
+async function connectMultiTab(numTabs) {
+  if (!fs.existsSync(READY_FILE)) {
+    throw new Error('Browser not running. Start it with: node start-browser.js');
+  }
+  const browser = await chromium.connectOverCDP(`http://localhost:${CDP_PORT}`);
+  const context = browser.contexts()[0];
+  const mainPage = context.pages()[0];
+
+  // Get the base URL from the main page
+  const baseUrl = await mainPage.url();
+
+  // Create additional pages
+  const pages = [mainPage];
+  for (let i = 1; i < numTabs; i++) {
+    const newPage = await context.newPage();
+    await newPage.goto(baseUrl);
+    await newPage.waitForLoadState('networkidle');
+    pages.push(newPage);
+  }
+
+  return { browser, context, pages };
+}
+
 // Switch between Lunch and Dinner
 async function switchMealType(page, type) {
   // type should be 'Lunch' or 'Dinner'
@@ -387,8 +411,106 @@ async function findUnselected(page) {
   });
 }
 
+// Select a single meal with all steps (used by parallel selector)
+// Returns { success, day, mealType, mealName, price, error }
+async function selectMealComplete(page, { day, mealType, mealName, addons }) {
+  const result = { day, mealType, mealName, success: false };
+
+  try {
+    // Switch to correct meal type (Lunch/Dinner)
+    const switchResult = await switchMealType(page, mealType);
+    result.switchResult = switchResult;
+
+    // Open the day's meal selection
+    const openResult = await openMealSelection(page, day);
+    if (openResult.error) {
+      result.error = openResult.error;
+      return result;
+    }
+    result.openResult = openResult;
+
+    // Select the meal
+    const selectResult = await selectMeal(page, mealName);
+    if (!selectResult.clicked) {
+      result.error = selectResult.error || 'Failed to select meal';
+      return result;
+    }
+    result.selectResult = selectResult;
+
+    // Toggle any addons if specified
+    if (addons && addons.length > 0) {
+      result.addonResults = [];
+      for (const addon of addons) {
+        const addonResult = await toggleAddon(page, addon.name, addon.section);
+        result.addonResults.push(addonResult);
+      }
+    }
+
+    // Confirm the selection
+    const confirmResult = await confirmMeal(page);
+    if (!confirmResult.confirmed) {
+      result.error = confirmResult.error || 'Failed to confirm meal';
+      return result;
+    }
+    result.price = confirmResult.price;
+    result.success = true;
+
+    return result;
+  } catch (err) {
+    result.error = err.message;
+    return result;
+  }
+}
+
+// Select multiple meals in parallel using multiple browser tabs
+// selections: Array of { day: 0-4, mealType: 'Lunch'|'Dinner', mealName: string, addons?: [{name, section?}] }
+async function selectMealsParallel(selections) {
+  if (!selections || selections.length === 0) {
+    return { success: false, error: 'No selections provided' };
+  }
+
+  const numTabs = selections.length;
+  console.log(`Opening ${numTabs} tabs for parallel meal selection...`);
+
+  const { browser, context, pages } = await connectMultiTab(numTabs);
+
+  try {
+    console.log(`Selecting ${numTabs} meals in parallel...`);
+
+    // Run all selections in parallel
+    const results = await Promise.all(
+      selections.map((selection, i) =>
+        selectMealComplete(pages[i], selection)
+      )
+    );
+
+    // Close extra tabs (keep only the first one)
+    for (let i = 1; i < pages.length; i++) {
+      await pages[i].close();
+    }
+
+    // Refresh the main page to show updated state
+    await pages[0].reload();
+    await pages[0].waitForLoadState('networkidle');
+
+    const successful = results.filter(r => r.success);
+    const failed = results.filter(r => !r.success);
+
+    return {
+      success: failed.length === 0,
+      total: results.length,
+      successful: successful.length,
+      failed: failed.length,
+      results
+    };
+  } finally {
+    await browser.close();
+  }
+}
+
 module.exports = {
   connect,
+  connectMultiTab,
   switchMealType,
   getMeals,
   openMealSelection,
@@ -400,5 +522,7 @@ module.exports = {
   confirmMeal,
   goBack,
   readPage,
-  findUnselected
+  findUnselected,
+  selectMealComplete,
+  selectMealsParallel
 };

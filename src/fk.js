@@ -271,6 +271,46 @@ const commands = {
     }
   },
 
+  // Select multiple meals in parallel using multiple browser tabs
+  // Usage: node fk.js select-all '[{"day":0,"mealType":"Lunch","mealName":"Chicken Bowl"},...]'
+  // Or: node fk.js select-all selections.json
+  async 'select-all'(jsonArg) {
+    let selections;
+
+    // Try to parse as JSON or read from file
+    if (jsonArg.startsWith('[')) {
+      selections = JSON.parse(jsonArg);
+    } else if (jsonArg.endsWith('.json')) {
+      const fs = require('fs');
+      const content = fs.readFileSync(path.join(__dirname, '..', jsonArg), 'utf8');
+      selections = JSON.parse(content);
+    } else {
+      console.error('Argument must be JSON array or path to .json file');
+      process.exit(1);
+    }
+
+    console.log(`Selecting ${selections.length} meals in parallel...`);
+    selections.forEach((s, i) => {
+      const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+      console.log(`  ${i + 1}. ${dayNames[s.day]} ${s.mealType}: ${s.mealName}`);
+    });
+    console.log('');
+
+    const result = await fk.selectMealsParallel(selections);
+
+    console.log('\n=== Results ===');
+    console.log(`Total: ${result.total}, Successful: ${result.successful}, Failed: ${result.failed}`);
+    console.log('');
+
+    result.results.forEach((r, i) => {
+      const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+      const status = r.success ? '✓' : '✗';
+      const price = r.price || '';
+      const error = r.error ? ` - Error: ${r.error}` : '';
+      console.log(`${status} ${dayNames[r.day]} ${r.mealType}: ${r.mealName} ${price}${error}`);
+    });
+  },
+
   help() {
     console.log(`Forkable CLI
 
@@ -280,6 +320,9 @@ Commands:
   dinner          - Switch to Dinner view
   open <day>      - Open meal selection for day (0=Mon, 4=Fri)
   select <name>   - Select a meal by name
+  select-all <json> - Select multiple meals in parallel (multi-tab)
+                     JSON format: [{"day":0,"mealType":"Lunch","mealName":"..."},...]
+                     Or pass path to .json file
   addons          - List available addons and prices
   selected        - Show currently selected options
   price           - Get current meal price
