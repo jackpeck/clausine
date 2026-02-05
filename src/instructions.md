@@ -48,7 +48,9 @@ node src/fk.js refresh
 
 This captures GraphQL responses and regenerates `menus.md` with current availability.
 
-## Selecting Meals
+## Selecting Meals (Parallel Multi-Tab Method)
+
+Use multiple browser tabs with sub-agents to select all meals in parallel. Each sub-agent operates its own tab, discovers available addons, and makes intelligent selections.
 
 ### 1. Check Available Options
 
@@ -56,63 +58,20 @@ This captures GraphQL responses and regenerates `menus.md` with current availabi
 node src/fk.js options <day> <lunch|dinner>
 ```
 
-This shows all available meals for a day/meal type, along with User's preferences from `user_preferences.txt`. Claude should review the options and choose the best match.
+This shows all available meals for a day/meal type, along with User's preferences from `user_preferences.txt`. Claude should review the options and choose the best match for each day.
 
-### 2. Select a Meal
-
-```bash
-node src/fk.js lunch                    # or: node src/fk.js dinner
-node src/fk.js open <day>               # 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri
-node src/fk.js select "<meal name>"
-node src/fk.js addons                   # see available options and add-ons
-node src/fk.js toggle "<addon>"         # toggle addon (first match)
-node src/fk.js toggle "<addon>" 2       # toggle addon in section 2 (for multiple choice groups)
-node src/fk.js notes "no onion please"  # add notes if restaurant supports it
-node src/fk.js price                    # verify price is under budget
-node src/fk.js confirm
-```
-
-If the page shows "CHOOSE MEAL FROM:" with restaurant buttons, one must be clicked first to see the menu. The `open` command handles this automatically. Once viewing options for a specific day and time, `select` searches across all restaurants so clicking a specific restaurant button first is not required.
-
-For meals with multiple required selections (e.g., "Choose Beef Type #1", "#2", "#3"), use the section number parameter with toggle to target specific groups.
-
-### 3. Select Multiple Meals in Parallel (Faster)
-
-For selecting multiple meals at once, use the multi-tab feature which opens separate browser tabs and selects all meals simultaneously:
+### 2. Open Tabs (one per meal)
 
 ```bash
-node src/fk.js select-all '[
-  {"day":0,"mealType":"Lunch","mealName":"Chicken Bowl"},
-  {"day":1,"mealType":"Lunch","mealName":"Beef Tacos"},
-  {"day":2,"mealType":"Lunch","mealName":"Veggie Wrap"}
-]'
+node src/fk.js open-tabs <n>
 ```
 
-Or save selections to a JSON file and pass the path:
-```bash
-node src/fk.js select-all selections.json
-```
+Example: `node src/fk.js open-tabs 5` opens 5 tabs for 5 meals.
 
-Each selection object supports:
-- `day` - 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri
-- `mealType` - "Lunch" or "Dinner"
-- `mealName` - Name of the meal to select
-- `addons` (optional) - Array of `{"name": "Addon Name", "section": 2}` (section is optional)
-
-This is much faster than selecting meals one at a time, as all tabs run in parallel.
-
-### 4. Parallel Selection with Sub-Agents (Best for Complex Meals)
-
-For meals that require addon decisions, spawn sub-agents that each operate their own browser tab. This allows each agent to discover available addons and make intelligent selections.
-
-**Step 1: Open tabs (one per meal)**
-```bash
-node src/fk.js open-tabs 5
-```
-
-**Step 2: Spawn sub-agents in parallel, each handling one tab**
+### 3. Spawn Sub-Agents in Parallel
 
 Each sub-agent runs independently on its assigned tab:
+
 ```bash
 # Sub-agent 0: Tab 0, Monday Lunch
 node src/select-one.js 0 0 Lunch "Chicken Bowl"
@@ -122,27 +81,37 @@ node src/fk.js tab-confirm 0
 
 # Sub-agent 1: Tab 1, Tuesday Lunch (runs in parallel)
 node src/select-one.js 1 1 Lunch "Beef Tacos"
-# ...
+# Shows available addons, agent decides, then:
+node src/fk.js tab-toggle 1 "Guacamole"
+node src/fk.js tab-confirm 1
+
+# ... more sub-agents for other days
 ```
 
-Or use `--auto-addons` to auto-select defaults and confirm immediately:
-```bash
-node src/select-one.js 0 0 Lunch "Chicken Bowl" --auto-addons
-```
+The `select-one.js` script:
+- Switches to the correct meal type (Lunch/Dinner)
+- Opens the day's meal selection
+- Selects the specified meal
+- Outputs available addons as JSON for the agent to decide
+- Does NOT confirm - the agent must call `tab-confirm` after selecting addons
 
-**Step 3: Clean up tabs**
+### 4. Clean Up Tabs
+
 ```bash
 node src/fk.js close-tabs
 ```
 
-**Tab-specific commands:**
+### Tab-Specific Commands
+
 - `tab-lunch <tab>` / `tab-dinner <tab>` - Switch meal type on tab
-- `tab-open <tab> <day>` - Open meal selection
+- `tab-open <tab> <day>` - Open meal selection (0=Mon, 4=Fri)
 - `tab-select <tab> <name>` - Select a meal
 - `tab-addons <tab>` - View available addons
 - `tab-toggle <tab> <addon> [section]` - Toggle an addon
 - `tab-confirm <tab>` - Confirm the selection
 - `tab-read <tab>` - Read page content
+
+For meals with multiple required selections (e.g., "Choose Rice Type"), use the section number parameter with tab-toggle to target specific groups.
 
 ### 5. Record the Selection
 
@@ -166,11 +135,12 @@ For the current week, Claude should find and fill any missing selections:
 2. Run `node src/fk.js unselected` to find meals without selections
 3. For each unselected meal, run `node src/fk.js options <day> <meal>` to see available options
 4. Choose the best meal based on preferences in `user_preferences.txt`
-5. Select meals using either method:
-   - **Individual**: Use `open`, `select`, `toggle`, `confirm` commands one day at a time
-   - **Parallel (faster)**: Use `select-all` with JSON to select multiple meals simultaneously
-6. Record with src/write-summary.js (both short summary and detailed explanation)
-7. After all meals are selected, ask User if they want to close the browser
+5. Open tabs: `node src/fk.js open-tabs <n>` (one per unselected meal)
+6. Spawn sub-agents in parallel, each handling one tab with `select-one.js`
+7. Each sub-agent: discover addons, select appropriate ones, confirm
+8. Close tabs: `node src/fk.js close-tabs`
+9. Record with src/write-summary.js (both short summary and detailed explanation)
+10. After all meals are selected, ask User if they want to close the browser
 
 ## Files
 

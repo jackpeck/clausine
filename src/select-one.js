@@ -1,15 +1,14 @@
 #!/usr/bin/env node
 // Select a single meal on a specific tab - designed for parallel sub-agent operation
-// Each sub-agent runs this script on its assigned tab, discovers addons, and confirms
+// Each sub-agent runs this script on its assigned tab, discovers addons, then decides
 //
-// Usage: node select-one.js <tab> <day> <mealType> <mealName> [--auto-addons]
+// Usage: node select-one.js <tab> <day> <mealType> <mealName>
 //
 // Example:
 //   node select-one.js 0 2 Lunch "Chicken Bowl"
-//   node select-one.js 1 3 Dinner "Beef Tacos" --auto-addons
+//   node select-one.js 1 3 Dinner "Beef Tacos"
 //
-// With --auto-addons, selects reasonable defaults (first option in required sections, no paid addons)
-// Without --auto-addons, outputs available addons as JSON for the agent to decide
+// After running, use tab-toggle and tab-confirm to complete the selection
 
 const fk = require('./forkable');
 
@@ -17,7 +16,7 @@ async function main() {
   const args = process.argv.slice(2);
 
   if (args.length < 4) {
-    console.error('Usage: node select-one.js <tab> <day> <mealType> <mealName> [--auto-addons]');
+    console.error('Usage: node select-one.js <tab> <day> <mealType> <mealName>');
     console.error('  tab: 0-based tab index');
     console.error('  day: 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri');
     console.error('  mealType: Lunch or Dinner');
@@ -29,7 +28,6 @@ async function main() {
   const day = parseInt(args[1]);
   const mealType = args[2];
   const mealName = args[3];
-  const autoAddons = args.includes('--auto-addons');
 
   const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
   console.log(`Tab ${tabIndex}: Selecting ${dayNames[day]} ${mealType} - "${mealName}"`);
@@ -82,39 +80,13 @@ async function main() {
         });
       }
 
-      if (autoAddons) {
-        // Auto-select first unselected option in each required section
-        const sections = new Set(addons.selections.map(s => s.section));
-        for (const section of sections) {
-          const sectionItems = addons.selections.filter(s => s.section === section);
-          const hasSelection = sectionItems.some(s => s.selected);
-          if (!hasSelection && sectionItems.length > 0) {
-            const first = sectionItems[0];
-            console.log(`  Auto-selecting: ${first.name}`);
-            await fk.toggleAddon(page, first.name);
-          }
-        }
-      } else {
-        // Output JSON for agent to process
-        console.log('\n  ADDON_JSON_START');
-        console.log(JSON.stringify({ selections: addons.selections, addons: addons.addons, price }, null, 2));
-        console.log('  ADDON_JSON_END');
-        console.log('\n  Use tab-toggle to select addons, then tab-confirm to finalize');
-
-        // Don't confirm - let the agent decide on addons first
-        await browser.close();
-        return;
-      }
+      // Output JSON for agent to process
+      console.log('\n  ADDON_JSON_START');
+      console.log(JSON.stringify({ selections: addons.selections, addons: addons.addons, price }, null, 2));
+      console.log('  ADDON_JSON_END');
     }
 
-    // Step 5: Confirm the selection
-    const confirmResult = await fk.confirmMeal(page);
-    if (!confirmResult.confirmed) {
-      console.error(`  Error confirming: ${confirmResult.error}`);
-      process.exit(1);
-    }
-
-    console.log(`\n  CONFIRMED at ${confirmResult.price}`);
+    console.log('\n  Use tab-toggle to select addons, then tab-confirm to finalize');
 
   } finally {
     await browser.close();
