@@ -48,9 +48,9 @@ node src/fk.js refresh
 
 This captures GraphQL responses and regenerates `menus.md` with current availability.
 
-## Selecting Meals (Parallel Multi-Tab Method)
+## Selecting Meals
 
-Use multiple browser tabs with sub-agents to select all meals in parallel. Each sub-agent operates its own tab, discovers available addons, and makes intelligent selections.
+**ALWAYS use the parallel multi-tab method with sub-agents.** This selects all meals simultaneously across multiple browser tabs, with each sub-agent discovering and choosing addons independently.
 
 ### 1. Check Available Options
 
