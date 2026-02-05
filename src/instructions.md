@@ -66,11 +66,13 @@ This shows all available meals for a day/meal type, along with User's preference
 node src/fk.js open-tabs <n>
 ```
 
-Example: `node src/fk.js open-tabs 5` opens 5 tabs for 5 meals.
+Open one tab per unselected meal. A full week can have up to 10 meals (Mon-Fri lunch + dinner).
+
+Example: `node src/fk.js open-tabs 10` opens 10 tabs for a full week.
 
 ### 3. Spawn Sub-Agents in Parallel
 
-Each sub-agent runs independently on its assigned tab:
+Each sub-agent runs independently on its assigned tab. Tab indices are 0-based and can be assigned to any day/meal combination:
 
 ```bash
 # Sub-agent 0: Tab 0, Monday Lunch
@@ -79,13 +81,16 @@ node src/select-one.js 0 0 Lunch "Chicken Bowl"
 node src/fk.js tab-toggle 0 "Extra Protein"
 node src/fk.js tab-confirm 0
 
-# Sub-agent 1: Tab 1, Tuesday Lunch (runs in parallel)
-node src/select-one.js 1 1 Lunch "Beef Tacos"
-# Shows available addons, agent decides, then:
-node src/fk.js tab-toggle 1 "Guacamole"
+# Sub-agent 1: Tab 1, Monday Dinner (runs in parallel)
+node src/select-one.js 1 0 Dinner "Pasta Primavera"
 node src/fk.js tab-confirm 1
 
-# ... more sub-agents for other days
+# Sub-agent 2: Tab 2, Tuesday Lunch (runs in parallel)
+node src/select-one.js 2 1 Lunch "Beef Tacos"
+node src/fk.js tab-toggle 2 "Guacamole"
+node src/fk.js tab-confirm 2
+
+# ... more sub-agents for remaining days (up to 10 total for full week)
 ```
 
 The `select-one.js` script:
