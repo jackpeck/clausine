@@ -107,17 +107,18 @@ node src/fk.js close-tabs
 
 ### Tab-Specific Commands
 
-- `tab-lunch <tab>` / `tab-dinner <tab>` - Switch meal type on tab
-- `tab-open <tab> <day>` - Open meal selection (0=Mon, 4=Fri)
-- `tab-select <tab> <name>` - Select a meal
-- `tab-addons <tab>` - View available addons
-- `tab-toggle <tab> <addon> [section]` - Toggle an addon
-- `tab-notes <tab> <text>` - Set notes on specific tab
-- `tab-price <tab>` - Get current price on specific tab
-- `tab-confirm <tab>` - Confirm the selection
-- `tab-read <tab>` - Read page content
-
-For meals with multiple required selections (e.g., "Choose Rice Type"), use the section number parameter with tab-toggle to target specific groups.
+```bash
+node src/fk.js tab-lunch <tab>              # or: node src/fk.js tab-dinner <tab>
+node src/fk.js tab-open <tab> <day>         # 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri
+node src/fk.js tab-select <tab> "<meal name>"
+node src/fk.js tab-addons <tab>             # see available options and add-ons
+node src/fk.js tab-toggle <tab> "<addon>"   # toggle addon (first match)
+node src/fk.js tab-toggle <tab> "<addon>" 2 # toggle addon in section 2 (for multiple choice groups)
+node src/fk.js tab-notes <tab> "no onion"   # add notes if restaurant supports it
+node src/fk.js tab-price <tab>              # verify price is under budget
+node src/fk.js tab-confirm <tab>
+node src/fk.js tab-read <tab>               # read page content
+```
 
 ### 5. Record the Selection
 
